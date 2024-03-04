@@ -1,0 +1,119 @@
+using System;
+class Program
+{
+    static void Main(string[] args)
+    {
+        Partie partie = new Partie();
+        partie.Jouer();
+    }
+}
+
+class Game
+{
+    private Puissance4 jeu;
+    private Joueur joueur1;
+    private Joueur joueur2;
+
+    public Partie()
+    {
+        jeu = new Puissance4();
+        joueur1 = new Joueur("Joueur 1", 'X');
+        joueur2 = new Joueur("Joueur 2", 'O');
+    }
+
+    public void Jouer()
+    {
+        
+    }
+}
+
+class Joueur
+{
+    public string Nom { get; private set; }
+    public char Pion { get; private set; }
+
+    public Joueur(string nom, char pion)
+    {
+        Nom = nom;
+        Pion = pion;
+    }
+}
+
+class Puissance4
+{
+    public const int Lignes = 6;
+    public const int Colonnes = 7;
+    private char[,] plateau = new char[Lignes, Colonnes];
+    public bool TourJoueur1 { get; private set; }
+
+    public Puissance4()
+    {
+        InitialiserPlateau();
+        TourJoueur1 = true;
+    }
+
+    public void AfficherPlateau()
+    {
+        Console.Clear();
+        for (int i = 0; i < Lignes; i++)
+        {
+            for (int j = 0; j < Colonnes; j++)
+            {
+                Console.Write($"| {plateau[i, j]} ");
+            }
+            Console.WriteLine("|");
+        }
+        Console.WriteLine("---------------");
+    }
+
+    public bool ColonneValide(int colonne)
+    {
+    }
+
+    public int AjouterPion(int colonne)
+    {
+    }
+
+    public void TourSuivant()
+    {
+        TourJoueur1 = !TourJoueur1;
+    }
+
+    public bool PartieGagnee(int ligne, int colonne)
+    {
+        char pion = plateau[ligne, colonne];
+        int count;
+
+       
+
+        return false;
+    }
+
+    private int CompterPions(int ligne, int colonne, int deltaLigne, int deltaColonne)
+    {
+       
+    }
+
+    public bool PartieNulle()
+    {
+        for (int i = 0; i < Colonnes; i++)
+        {
+            if (ColonneValide(i))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void InitialiserPlateau()
+    {
+        for (int i = 0; i < Lignes; i++)
+        {
+            for (int j = 0; j < Colonnes; j++)
+            {
+                plateau[i, j] = ' ';
+            }
+        }
+    }
+}
