@@ -1,104 +1,172 @@
 using System;
+
 class Program
 {
     static void Main(string[] args)
     {
-        Partie partie = new Partie();
-        partie.Jouer();
+        Game game = new Game();
+        game.Play();
     }
 }
 
 class Game
 {
-    private Puissance4 jeu;
-    private Joueur joueur1;
-    private Joueur joueur2;
+    private ConnectFour board;
+    private Player player1;
+    private Player player2;
 
-    public Partie()
+    public Game()
     {
-        jeu = new Puissance4();
-        joueur1 = new Joueur("Joueur 1", 'X');
-        joueur2 = new Joueur("Joueur 2", 'O');
+        board = new ConnectFour();
+        player1 = new Player("Player 1", 'X');
+        player2 = new Player("Player 2", 'O');
     }
 
-    public void Jouer()
+    public void Play()
     {
-        
+        board.DisplayBoard();
+
+        while (true)
+        {
+            int column = -1;
+            Player activePlayer = board.IsPlayer1sTurn ? player1 : player2;
+
+            do
+            {
+                Console.WriteLine(activePlayer.Name + ", choose a column (0-6):");
+            } while (!int.TryParse(Console.ReadLine(), out column) || column < 0 || column >= ConnectFour.Columns || !board.IsValidColumn(column));
+
+            int row = board.AddToken(column);
+
+            if (board.IsGameWon(row, column))
+            {
+                board.DisplayBoard();
+                Console.WriteLine(activePlayer.Name + " has won!");
+                break;
+            }
+
+            if (board.IsGameDraw())
+            {
+                board.DisplayBoard();
+                Console.WriteLine("The game is a draw!");
+                break;
+            }
+
+            board.NextTurn();
+            board.DisplayBoard();
+        }
     }
 }
 
-class Joueur
+class Player
 {
-    public string Nom { get; private set; }
-    public char Pion { get; private set; }
+    public string Name { get; private set; }
+    public char Token { get; private set; }
 
-    public Joueur(string nom, char pion)
+    public Player(string name, char token)
     {
-        Nom = nom;
-        Pion = pion;
+        Name = name;
+        Token = token;
     }
 }
 
-class Puissance4
+class ConnectFour
 {
-    public const int Lignes = 6;
-    public const int Colonnes = 7;
-    private char[,] plateau = new char[Lignes, Colonnes];
-    public bool TourJoueur1 { get; private set; }
+    public const int Rows = 6;
+    public const int Columns = 7;
+    private char[,] board = new char[Rows, Columns];
+    public bool IsPlayer1sTurn { get; private set; }
 
-    public Puissance4()
+    public ConnectFour()
     {
-        InitialiserPlateau();
-        TourJoueur1 = true;
+        InitializeBoard();
+        IsPlayer1sTurn = true;
     }
 
-    public void AfficherPlateau()
+    public void DisplayBoard()
     {
         Console.Clear();
-        for (int i = 0; i < Lignes; i++)
+        for (int i = 0; i < Rows; i++)
         {
-            for (int j = 0; j < Colonnes; j++)
+            for (int j = 0; j < Columns; j++)
             {
-                Console.Write($"| {plateau[i, j]} ");
+                Console.Write("| " + board[i, j] + " ");
             }
             Console.WriteLine("|");
         }
         Console.WriteLine("---------------");
     }
 
-    public bool ColonneValide(int colonne)
+    public bool IsValidColumn(int column)
     {
+        return board[0, column] == ' ';
     }
 
-    public int AjouterPion(int colonne)
+    public int AddToken(int column)
     {
+        int row;
+        for (row = Rows - 1; row >= 0; row--)
+        {
+            if (board[row, column] == ' ')
+            {
+                board[row, column] = IsPlayer1sTurn ? 'X' : 'O';
+                break;
+            }
+        }
+        return row;
     }
 
-    public void TourSuivant()
+    public void NextTurn()
     {
-        TourJoueur1 = !TourJoueur1;
+        IsPlayer1sTurn = !IsPlayer1sTurn;
     }
 
-    public bool PartieGagnee(int ligne, int colonne)
+    public bool IsGameWon(int row, int column)
     {
-        char pion = plateau[ligne, colonne];
+        char token = board[row, column];
         int count;
 
-       
+        // Horizontal Check
+        count = 1 + CountTokens(row, column, 0, 1) + CountTokens(row, column, 0, -1);
+        if (count >= 4) return true;
+
+        // Vertical Check
+        count = 1 + CountTokens(row, column, 1, 0);
+        if (count >= 4) return true;
+
+        // Diagonal (\) Check
+        count = 1 + CountTokens(row, column, 1, 1) + CountTokens(row, column, -1, -1);
+        if (count >= 4) return true;
+
+        // Diagonal (/) Check
+        count = 1 + CountTokens(row, column, 1, -1) + CountTokens(row, column, -1, 1);
+        if (count >= 4) return true;
 
         return false;
     }
 
-    private int CompterPions(int ligne, int colonne, int deltaLigne, int deltaColonne)
+    private int CountTokens(int row, int column, int deltaRow, int deltaColumn)
     {
-       
+        char token = board[row, column];
+        int count = 0;
+        int r = row + deltaRow;
+        int c = column + deltaColumn;
+
+        while (r >= 0 && r < Rows && c >= 0 && c < Columns && board[r, c] == token)
+        {
+            count++;
+            r += deltaRow;
+            c += deltaColumn;
+        }
+
+        return count;
     }
 
-    public bool PartieNulle()
+    public bool IsGameDraw()
     {
-        for (int i = 0; i < Colonnes; i++)
+        for (int i = 0; i < Columns; i++)
         {
-            if (ColonneValide(i))
+            if (IsValidColumn(i))
             {
                 return false;
             }
@@ -106,13 +174,13 @@ class Puissance4
         return true;
     }
 
-    private void InitialiserPlateau()
+    private void InitializeBoard()
     {
-        for (int i = 0; i < Lignes; i++)
+        for (int i = 0; i < Rows; i++)
         {
-            for (int j = 0; j < Colonnes; j++)
+            for (int j = 0; j < Columns; j++)
             {
-                plateau[i, j] = ' ';
+                board[i, j] = ' ';
             }
         }
     }
